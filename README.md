@@ -1,11 +1,13 @@
 # BYG Imgui Logger
 
 
+## Unreal Version Support
+
+* Unreal Engine 4.27+
 
 ## Requirements
 
-* [UnrealImGui](https://github.com/segross/UnrealImGui)
-
+* [UnrealImGui](https://github.com/segross/UnrealImGui)
 
 ## License
 
