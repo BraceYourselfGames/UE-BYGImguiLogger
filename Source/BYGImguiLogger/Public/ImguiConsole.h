@@ -83,9 +83,11 @@ struct FBYGAppConsole
 	bool bShowLog = true;
 	bool bShowVerbose = false;
 	int32 LongestCategoryName = 8;
+	int32 LongestVerbosityName = 8;
 
-	TMap<ELogVerbosity::Type, char*> StrForVerbosity;
+	TMap<ELogVerbosity::Type, FString> StrForVerbosity;
 	TMap<ELogVerbosity::Type, bool> FilterForVerbosity;
+	TMap<ELogVerbosity::Type, ImVec4> ColorForVerbosity;
 	TMap<FString, bool> FilterForCategory;
 
 	FBYGAppConsole()
@@ -108,14 +110,29 @@ struct FBYGAppConsole
 			{ELogVerbosity::Verbose, "Verbose"},
 			{ELogVerbosity::VeryVerbose, "VeryVerbose"}
 		};
+		LongestVerbosityName = 0;
+		for (const auto& Pair : StrForVerbosity )
+		{
+		if (Pair.Value.Len() > LongestVerbosityName)
+		LongestVerbosityName = Pair.Value.Len();
+		}
 		FilterForVerbosity = {
 			{ELogVerbosity::Fatal, true},
 			{ELogVerbosity::Error, true},
 			{ELogVerbosity::Warning, true},
 			{ELogVerbosity::Display, true},
-			{ELogVerbosity::Log, false},
+			{ELogVerbosity::Log, true},
 			{ELogVerbosity::Verbose, false},
 			{ELogVerbosity::VeryVerbose, false}
+		};
+		ColorForVerbosity = {
+			 { ELogVerbosity::Fatal, ImVec4(1.0f, 33/255.f, 111/255.f, 1.0f)},
+			 { ELogVerbosity::Error, ImVec4(1.0f, 42/255.f, 42/255.f, 1.0f)},
+			 { ELogVerbosity::Warning, ImVec4(1.0f, 222/255.f, 42/255.f, 1.0f)},
+			 { ELogVerbosity::Display, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)},
+			 { ELogVerbosity::Log, ImVec4(0.9f, 0.9f, 0.9f, 1.0f)},
+			 { ELogVerbosity::Verbose, ImVec4(0.6f, 0.6f, 0.6f, 1.0f)},
+			 { ELogVerbosity::VeryVerbose, ImVec4(0.4f, 0.4f, 0.4f, 1.0f)}
 		};
 		
 	}
@@ -180,7 +197,7 @@ struct FBYGAppConsole
 
 	char* GetVerbosityText(ELogVerbosity::Type Verbosity) const
 	{
-		return StrForVerbosity[Verbosity];
+		return TCHAR_TO_ANSI(*StrForVerbosity[Verbosity]);
 	}
 
 	void Draw(const char* title, bool* p_open)
@@ -206,9 +223,26 @@ struct FBYGAppConsole
 
 		if (ImGui::BeginPopup("Verbosity"))
 		{
+			bool bAllOn = true;
+			for (const auto& Pair: FilterForVerbosity)
+			{
+				if (!Pair.Value)
+				{
+					bAllOn = false;
+					break;
+				}
+			}
+			if (ImGui::Checkbox("All", &bAllOn))
+			{
+				for (auto& Pair: FilterForVerbosity)
+				{
+					Pair.Value = bAllOn;
+				}
+			}
+			ImGui::Separator();
 			for (const auto& Pair: StrForVerbosity)
 			{
-				ImGui::Checkbox(Pair.Value, &FilterForVerbosity[Pair.Key]);
+				ImGui::Checkbox(TCHAR_TO_ANSI(*Pair.Value), &FilterForVerbosity[Pair.Key]);
 			}
 			ImGui::EndPopup();
 		}
@@ -219,6 +253,23 @@ struct FBYGAppConsole
 		
 		if (ImGui::BeginPopup("Category"))
 		{
+			bool bAllOn = true;
+			for (const auto& Pair: FilterForCategory)
+			{
+				if (!Pair.Value)
+				{
+					bAllOn = false;
+					break;
+				}
+			}
+			if (ImGui::Checkbox("All", &bAllOn))
+			{
+				for (auto& Pair: FilterForCategory)
+				{
+					Pair.Value = bAllOn;
+				}
+			}
+			ImGui::Separator();
 			for (auto& Pair: FilterForCategory)
 			{
 				ImGui::Checkbox(TCHAR_TO_ANSI(*Pair.Key), &Pair.Value);
@@ -227,7 +278,7 @@ struct FBYGAppConsole
 		}
 		if (ImGui::Button("Category..."))
 			ImGui::OpenPopup("Category");
-		
+			
 		ImGui::SameLine();
 
 		// Options, Filter
@@ -275,26 +326,18 @@ struct FBYGAppConsole
 			if (!Filter.PassFilter(message))
 				continue;
 
+			const bool* bCategoryFilterEnabled = FilterForCategory.Find(Items[i].Category);
+			if (bCategoryFilterEnabled == nullptr || *bCategoryFilterEnabled == false)
+				continue;
+			
+			const bool* bVerbosityFilterEnabled = FilterForVerbosity.Find(Items[i].Verbosity);
+			if (bVerbosityFilterEnabled == nullptr || *bVerbosityFilterEnabled == false)
+				continue;
+
 			// Normally you would store more information in your item (e.g. make Items[] an array of structure, store color/type etc.)
-			bool pop_color = false;
-			if (Items[i].Verbosity == ELogVerbosity::Error)
-			{
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
-				pop_color = true;
-			}
-			else if (Items[i].Verbosity == ELogVerbosity::Warning)
-			{
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 1.0f, 1.0f, 1.0f));
-				pop_color = true;
-			}
-			else if (Items[i].Verbosity == ELogVerbosity::Verbose)
-			{
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
-				pop_color = true;
-			}
+			ImGui::PushStyleColor(ImGuiCol_Text, ColorForVerbosity[Items[i].Verbosity]);
 			ImGui::TextUnformatted(message);
-			if (pop_color)
-				ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
 		}
 		if (copy_to_clipboard)
 			ImGui::LogFinish();
