@@ -1,0 +1,31 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "BYGImguiLogger",
+	"Description": "Imgui-based logging window",
+	"Category": "Other",
+	"CreatedBy": "benui",
+	"CreatedByURL": "https://benui.ca/",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "BYGImguiLogger",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Comment": "Use UnrealImGui from https://github.com/segross/UnrealImGui",
+			"Name": "ImGui",
+			"Enabled": true
+		}
+	]
+}
