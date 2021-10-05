@@ -1,5 +1,7 @@
 # BYG Imgui Logger
 
+![](Resources/screenshot.jpg)
+
 Displays Unreal's `UE_LOG` output in an ImGui window.
 
 Heavily based on the Console example from imgui_demo.cpp included with ImGui.
