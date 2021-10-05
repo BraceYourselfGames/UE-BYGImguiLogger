@@ -317,6 +317,7 @@ struct FBYGAppConsole
 		// A typical application wanting coarse clipping and filtering may want to pre-compute an array of indices that passed the filtering test, recomputing this array when user changes the filter,
 		// and appending newly elements as they are inserted. This is left as a task to the user until we can manage to improve this example code!
 		// If your items are of variable size you may want to implement code similar to what ImGuiListClipper does. Or split your data into fixed height items to allow random-seeking into your list.
+		ImGui::Columns(3);
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
 		if (copy_to_clipboard)
 			ImGui::LogToClipboard();
@@ -336,11 +337,18 @@ struct FBYGAppConsole
 
 			// Normally you would store more information in your item (e.g. make Items[] an array of structure, store color/type etc.)
 			ImGui::PushStyleColor(ImGuiCol_Text, ColorForVerbosity[Items[i].Verbosity]);
-			ImGui::TextUnformatted(message);
+			//ImGui::Text("%*s %*s %s", LongestVerbosityName, TCHAR_TO_ANSI(*StrForVerbosity[Items[i].Verbosity]), LongestCategoryName, Items[i].Category, Items[i].Message);
+			ImGui::TextUnformatted(TCHAR_TO_ANSI(*StrForVerbosity[Items[i].Verbosity]));
+			ImGui::NextColumn();
+			ImGui::TextUnformatted(Items[i].Category);
+			ImGui::NextColumn();
+			ImGui::TextUnformatted(Items[i].Message);
+			ImGui::NextColumn();
 			ImGui::PopStyleColor();
 		}
 		if (copy_to_clipboard)
 			ImGui::LogFinish();
+		ImGui::Columns(1);
 
 		if (ScrollToBottom || (AutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
 			ImGui::SetScrollHereY(1.0f);
