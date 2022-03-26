@@ -318,6 +318,19 @@ struct FBYGAppConsole
 		// and appending newly elements as they are inserted. This is left as a task to the user until we can manage to improve this example code!
 		// If your items are of variable size you may want to implement code similar to what ImGuiListClipper does. Or split your data into fixed height items to allow random-seeking into your list.
 		ImGui::Columns(3);
+		// HACK: Only want to call SetColumnWidth one time...
+		static float Col0Spacing = 80;
+		if (Col0Spacing > 0)
+		{
+			ImGui::SetColumnWidth(0, Col0Spacing);
+			Col0Spacing = 0;
+		}
+		static float Col1Spacing = 120;
+		if (Col1Spacing > 0)
+		{
+			ImGui::SetColumnWidth(1, Col1Spacing);
+			Col1Spacing = 0;
+		}
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
 		if (copy_to_clipboard)
 			ImGui::LogToClipboard();
