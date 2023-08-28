@@ -379,7 +379,7 @@ struct FBYGAppConsole
 			Strtrim(s);
 			if (s[0])
 				ExecCommand(s);
-			strcpy(s, "");
+			strcpy_s(s, sizeof s, "");
 			reclaim_focus = true;
 		}
 
